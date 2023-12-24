@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import userRoute from "./routes/user.route.js";
+import authRoute from "./routes/auth.route.js";
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ mongoose
   });
 
 const app = express();
+app.use(express.json());
 
 app.listen(3000, () => {
   console.log("Server listening on port 3000");
@@ -22,17 +24,4 @@ app.listen(3000, () => {
 
 app.use("/api/user", userRoute);
 
-// // just an example of how to use express
-// app.get("/test", (req, res) => {
-//   res.send("Hello World!");
-// });
-
-// app.get("/json", (req, res) => {
-//   res.json([
-//     {
-//       status: "success",
-//       data: "data1",
-//       name: "John Doe",
-//     },
-//   ]);
-// });
+app.use("/api/auth", authRoute);
