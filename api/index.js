@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import userRoute from "./routes/user.route.js";
 
 dotenv.config();
 
@@ -18,3 +19,20 @@ const app = express();
 app.listen(3000, () => {
   console.log("Server listening on port 3000");
 });
+
+app.use("/api/user", userRoute);
+
+// // just an example of how to use express
+// app.get("/test", (req, res) => {
+//   res.send("Hello World!");
+// });
+
+// app.get("/json", (req, res) => {
+//   res.json([
+//     {
+//       status: "success",
+//       data: "data1",
+//       name: "John Doe",
+//     },
+//   ]);
+// });
