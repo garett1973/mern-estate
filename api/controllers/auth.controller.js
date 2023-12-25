@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { errorHandler } from "../utils/error.js";
 
 export const signup = async (req, res, next) => {
   const { username, email, password, passwordConfirm } = req.body;
@@ -30,9 +31,10 @@ export const signup = async (req, res, next) => {
 
 export const signin = async (req, res, next) => {
   const { email, password } = req.body;
-
+  console.log("signin", req.body);
   try {
     const validUser = await User.findOne({ email });
+    console.log("validUser");
     if (!validUser) {
       return next(errorHandler(false, 400, "Invalid credentials"));
     }
@@ -60,6 +62,7 @@ export const signin = async (req, res, next) => {
         user: rest,
       });
   } catch (err) {
+    console.log("catch", err);
     next(err);
   }
 };
