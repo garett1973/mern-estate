@@ -7,22 +7,23 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 import { app } from "../firebase";
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+} from "../redux/user/userSlice.js";
+import { useDispatch } from "react-redux";
+import { set } from "mongoose";
 
 export default function Profile() {
-  const { currentUser } = useSelector((state) => state.user);
+  const { currentUser, loading, error } = useSelector((state) => state.user);
   const fileRef = useRef(null);
   const [file, setFile] = useState(undefined);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState(false);
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-    passwordConfirm: "",
-    avatar: "",
-  });
-
-  console.log(formData);
+  const [formData, setFormData] = useState({});
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (file) {
@@ -57,10 +58,44 @@ export default function Profile() {
     );
   };
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      dispatch(updateUserStart());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        setTimeout(() => {
+          dispatch(updateUserFailure(""));
+        }, 4000);
+        return;
+      }
+      dispatch(updateUserSuccess(data.user));
+      setUpdateSuccess(true);
+      setTimeout(() => {
+        setUpdateSuccess(false);
+      }, 4000);
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
+    }
+  };
+
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
-      <form className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           onChange={(e) => setFile(e.target.files[0])}
           type="file"
@@ -70,7 +105,7 @@ export default function Profile() {
         />
         <img
           onClick={() => fileRef.current.click()}
-          src={formData.avatar || currentUser.user.avatar}
+          src={formData.avatar || currentUser.avatar || null}
           alt="user"
           className="w-24 h-24 object-cover rounded-full self-center cursor-pointer my-3"
         />
@@ -86,41 +121,62 @@ export default function Profile() {
           )}
         </p>
         <input
+          onChange={handleChange}
           className="w-full md:w-3/4 border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
           id="username"
+          defaultValue={currentUser.username}
           type="text"
           placeholder="Username"
         />
         <input
+          onChange={handleChange}
           className="w-full md:w-3/4 border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
           id="email"
+          defaultValue={currentUser.email}
           type="email"
           placeholder="Email"
         />
         <input
+          onChange={handleChange}
           className="w-full md:w-3/4 border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
           id="password"
           type="password"
           placeholder="Password"
         />
         <input
+          onChange={handleChange}
           className="w-full md:w-3/4 border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
           id="passwordConfirm"
           type="password"
           placeholder="Confirm Password"
         />
         <button
+          disabled={loading}
           className="w-full md:w-3/4 uppercase border-2 border-gray-400 rounded-lg px-3 py-2 my-2 bg-gray-400 hover:bg-gray-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
           id="signUp_submit"
           type="submit"
         >
-          Update Profile
+          {loading ? "Loading..." : "Update Profile"}
         </button>
       </form>
       <div className="w-3/4 mx-auto flex justify-between mt-2">
         <span className="text-red-700 cursor-pointer">Delete Account</span>
         <span className="text-red-700 cursor-pointer">Sign Out</span>
       </div>
+      <p className="w-full md:w-3/4 mx-auto mt-2">
+        {error ? (
+          <span className="text-red-700">{error}</span>
+        ) : (
+          <span className="text-green-700">{currentUser.message}</span>
+        )}
+      </p>
+      <p className="w-full md:w-3/4 mx-auto mt-2">
+        {updateSuccess ? (
+          <span className="text-green-700">Profile updated</span>
+        ) : (
+          ""
+        )}
+      </p>
     </div>
   );
 }
