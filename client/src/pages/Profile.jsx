@@ -11,9 +11,11 @@ import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+  deleteUserFailure,
 } from "../redux/user/userSlice.js";
 import { useDispatch } from "react-redux";
-import { set } from "mongoose";
 
 export default function Profile() {
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -23,7 +25,10 @@ export default function Profile() {
   const [uploadError, setUploadError] = useState(false);
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
   const dispatch = useDispatch();
+
+  const loggedInUser = currentUser.user;
 
   useEffect(() => {
     if (file) {
@@ -67,13 +72,18 @@ export default function Profile() {
 
     try {
       dispatch(updateUserStart());
-      const res = await fetch(`/api/user/update/${currentUser._id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        `/api/user/update/${
+          currentUser._id ? currentUser._id : loggedInUser._id
+        }`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
       const data = await res.json();
       if (data.success === false) {
         dispatch(updateUserFailure(data.message));
@@ -92,6 +102,35 @@ export default function Profile() {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(
+        `/api/user/delete/${
+          currentUser._id ? currentUser._id : loggedInUser._id
+        }`,
+        {
+          method: "DELETE",
+        }
+      );
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        setTimeout(() => {
+          dispatch(deleteUserFailure(""));
+        }, 4000);
+        return;
+      }
+      dispatch(deleteUserSuccess(data.user));
+      setDeleteSuccess(true);
+      setTimeout(() => {
+        setDeleteSuccess(false);
+      }, 4000);
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  };
+
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
@@ -105,7 +144,11 @@ export default function Profile() {
         />
         <img
           onClick={() => fileRef.current.click()}
-          src={formData.avatar || currentUser.avatar || null}
+          src={
+            formData.avatar || currentUser.avatar
+              ? currentUser.avatar
+              : loggedInUser.avatar
+          }
           alt="user"
           className="w-24 h-24 object-cover rounded-full self-center cursor-pointer my-3"
         />
@@ -124,7 +167,9 @@ export default function Profile() {
           onChange={handleChange}
           className="w-full md:w-3/4 border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
           id="username"
-          defaultValue={currentUser.username}
+          defaultValue={
+            currentUser.username ? currentUser.username : loggedInUser.username
+          }
           type="text"
           placeholder="Username"
         />
@@ -132,7 +177,9 @@ export default function Profile() {
           onChange={handleChange}
           className="w-full md:w-3/4 border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
           id="email"
-          defaultValue={currentUser.email}
+          defaultValue={
+            currentUser.email ? currentUser.email : loggedInUser.email
+          }
           type="email"
           placeholder="Email"
         />
@@ -160,7 +207,9 @@ export default function Profile() {
         </button>
       </form>
       <div className="w-3/4 mx-auto flex justify-between mt-2">
-        <span className="text-red-700 cursor-pointer">Delete Account</span>
+        <span onClick={handleDelete} className="text-red-700 cursor-pointer">
+          Delete Account
+        </span>
         <span className="text-red-700 cursor-pointer">Sign Out</span>
       </div>
       <p className="w-full md:w-3/4 mx-auto mt-2">
@@ -173,6 +222,13 @@ export default function Profile() {
       <p className="w-full md:w-3/4 mx-auto mt-2">
         {updateSuccess ? (
           <span className="text-green-700">Profile updated</span>
+        ) : (
+          ""
+        )}
+      </p>
+      <p className="w-full md:w-3/4 mx-auto mt-2">
+        {deleteSuccess ? (
+          <span className="text-green-700">User deleted</span>
         ) : (
           ""
         )}

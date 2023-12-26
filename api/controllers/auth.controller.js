@@ -99,8 +99,6 @@ export const google = async (req, res, next) => {
       });
       const savedUser = await newUser.save();
 
-      console.log("savedUser", savedUser);
-
       const token = jwt.sign(
         { id: savedUser._id, username: savedUser.username },
         process.env.JWT_SECRET,
