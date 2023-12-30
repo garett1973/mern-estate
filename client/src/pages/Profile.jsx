@@ -19,6 +19,7 @@ import {
   signoutUserFailure,
 } from "../redux/user/userSlice.js";
 import { useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 
 export default function Profile() {
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -223,12 +224,18 @@ export default function Profile() {
         />
         <button
           disabled={loading}
-          className="w-full md:w-3/4 uppercase border-2 border-gray-400 rounded-lg px-3 py-2 my-2 bg-gray-400 hover:bg-gray-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
+          className="w-full md:w-3/4 uppercase border-2 border-gray-400 rounded-lg px-3 py-2 mt-2 bg-gray-400 hover:bg-gray-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
           id="signUp_submit"
           type="submit"
         >
           {loading ? "Loading..." : "Update Profile"}
         </button>
+        <Link
+          to={"/create-listing"}
+          className="w-full md:w-3/4 uppercase border-2 border-green-400 rounded-lg px-3 py-2 mb-2 bg-green-400 hover:bg-green-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed mx-auto text-center"
+        >
+          Create Listing
+        </Link>
       </form>
       <div className="w-3/4 mx-auto flex justify-between mt-2">
         <span onClick={handleDelete} className="text-red-700 cursor-pointer">
