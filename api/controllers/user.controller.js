@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
 import { errorHandler } from "../utils/error.js";
+import Listing from "../models/listing.model.js";
 
 export const test = (req, res) => {
   res.send("Api route is working!");
@@ -65,6 +66,28 @@ export const deleteUser = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "User deleted successfully",
+    });
+  } catch (err) {
+    return next(errorHandler(false, 500, "Internal Server Error"));
+  }
+};
+
+export const getUserListings = async (req, res, next) => {
+  if (req.user.id !== req.params.id) {
+    return next(errorHandler(false, 401, "You are unauthorized"));
+  }
+
+  try {
+    const listings = await Listing.find({ userRef: req.params.id });
+
+    if (!listings) {
+      return next(errorHandler(false, 404, "Listings not found"));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Listings retrieved successfully",
+      listings,
     });
   } catch (err) {
     return next(errorHandler(false, 500, "Internal Server Error"));
