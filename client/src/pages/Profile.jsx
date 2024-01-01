@@ -20,6 +20,7 @@ import {
 } from "../redux/user/userSlice.js";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
+import { set } from "mongoose";
 
 export default function Profile() {
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -27,9 +28,11 @@ export default function Profile() {
   const [file, setFile] = useState(undefined);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState(false);
+  const [getListingsError, setGetListingsError] = useState(false);
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [userListings, setUserListings] = useState([]); // [{}, {}, {}
   const dispatch = useDispatch();
 
   const loggedInUser = currentUser.user;
@@ -152,6 +155,28 @@ export default function Profile() {
     }
   };
 
+  const handleShowListings = async () => {
+    try {
+      setGetListingsError(false);
+      const res = await fetch(`/api/user/listings/${loggedInUser._id}`);
+      const data = await res.json();
+      if (data.success === false) {
+        setGetListingsError(true);
+        setTimeout(() => {
+          setGetListingsError(false);
+        }, 5000);
+        return;
+      }
+      setUserListings(data.listings);
+      console.log(userListings);
+    } catch (error) {
+      setGetListingsError(true);
+      setTimeout(() => {
+        setGetListingsError(false);
+      }, 5000);
+    }
+  };
+
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
@@ -177,7 +202,7 @@ export default function Profile() {
           alt="user"
           className="w-24 h-24 object-cover rounded-full self-center cursor-pointer my-3"
         />
-        <p className="w-full md:w-3/4 mx-auto">
+        <p className="w-full  mx-auto">
           {uploadError ? (
             <span className="text-red-700">Error uploading file</span>
           ) : uploadProgress > 0 && uploadProgress < 100 ? (
@@ -190,7 +215,7 @@ export default function Profile() {
         </p>
         <input
           onChange={handleChange}
-          className="w-full md:w-3/4 border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
+          className="w-full  border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
           id="username"
           defaultValue={
             currentUser.username ? currentUser.username : loggedInUser.username
@@ -200,7 +225,7 @@ export default function Profile() {
         />
         <input
           onChange={handleChange}
-          className="w-full md:w-3/4 border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
+          className="w-full  border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
           id="email"
           defaultValue={
             currentUser.email ? currentUser.email : loggedInUser.email
@@ -210,21 +235,21 @@ export default function Profile() {
         />
         <input
           onChange={handleChange}
-          className="w-full md:w-3/4 border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
+          className="w-full  border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
           id="password"
           type="password"
           placeholder="Password"
         />
         <input
           onChange={handleChange}
-          className="w-full md:w-3/4 border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
+          className="w-full  border-2 border-gray-400 rounded-lg px-3 py-2 mx-auto"
           id="passwordConfirm"
           type="password"
           placeholder="Confirm Password"
         />
         <button
           disabled={loading}
-          className="w-full md:w-3/4 uppercase border-2 border-gray-400 rounded-lg px-3 py-2 mt-2 bg-gray-400 hover:bg-gray-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
+          className="w-full  uppercase border-2 border-gray-400 rounded-lg px-3 py-2 mt-2 bg-gray-400 hover:bg-gray-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
           id="signUp_submit"
           type="submit"
         >
@@ -232,7 +257,7 @@ export default function Profile() {
         </button>
         <Link
           to={"/create-listing"}
-          className="w-full md:w-3/4 uppercase border-2 border-green-400 rounded-lg px-3 py-2 mb-2 bg-green-400 hover:bg-green-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed mx-auto text-center"
+          className="w-full  uppercase border-2 border-green-400 rounded-lg px-3 py-2 mb-2 bg-green-400 hover:bg-green-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed mx-auto text-center"
         >
           Create Listing
         </Link>
@@ -245,27 +270,70 @@ export default function Profile() {
           Sign Out
         </span>
       </div>
-      <p className="w-full md:w-3/4 mx-auto mt-2">
-        {error ? (
-          <span className="text-red-700">{error}</span>
-        ) : (
-          <span className="text-green-700">{currentUser.message}</span>
-        )}
+      <p className="w-full  mx-auto mt-2">
+        {error ? <span className="text-red-700">{error}</span> : ""}
       </p>
-      <p className="w-full md:w-3/4 mx-auto mt-2">
+      <p className="w-full  mx-auto mt-2">
         {updateSuccess ? (
           <span className="text-green-700">Profile updated</span>
         ) : (
           ""
         )}
       </p>
-      <p className="w-full md:w-3/4 mx-auto mt-2">
+      <p className="w-full  mx-auto mt-2">
         {deleteSuccess ? (
           <span className="text-green-700">User deleted</span>
         ) : (
           ""
         )}
       </p>
+      <div className="w-3/4 mx-auto flex justify-around my-2">
+        <span
+          onClick={handleShowListings}
+          className="text-green-700 cursor-pointer"
+        >
+          Show all listings
+        </span>
+      </div>
+      <p className="w-full  mx-auto mt-2">
+        {getListingsError ? (
+          <span className="text-red-700">Error getting listings</span>
+        ) : (
+          ""
+        )}
+      </p>
+      {userListings && userListings.length > 0 && (
+        <div className="">
+          <h1 className="text-3xl font-semibold text-center my-7">
+            Your Listings
+          </h1>
+          {userListings.map((listing) => (
+            <div
+              key={listing._id}
+              className="w-full mx-auto mt-2 flex justify-between p-3 border border-gray-300 p-2 rounded-md w-full items-center"
+            >
+              <Link to={`/listing/${listing._id}`} className="flex">
+                <img
+                  src={listing.imageUrls[0]}
+                  alt="listing"
+                  className="w-20 object-cover rounded-lg shadow-lg"
+                />
+                <p className="my-auto px-4 font-semibold truncate">
+                  {listing.name}
+                </p>
+              </Link>
+              <div className="flex flex-col items-center">
+                <button className="text-red-500 uppercase hover:text-red-700 mb-1">
+                  Delete
+                </button>
+                <button className="text-green-500 uppercase hover:text-green-700">
+                  Edit
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
