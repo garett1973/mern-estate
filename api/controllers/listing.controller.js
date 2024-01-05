@@ -8,3 +8,31 @@ export const createListing = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteListing = async (req, res, next) => {
+  const listing = await Listing.findById(req.params.id);
+  if (!listing) {
+    return res.status(404).json({
+      success: false,
+      error: "Listing not found",
+    });
+  }
+
+  if (listing.userRef !== req.user.id) {
+    return res.status(401).json({
+      success: false,
+      error: "User not authorized",
+    });
+  }
+
+  try {
+    const listing = await Listing.findByIdAndDelete(req.params.id);
+    return res.status(200).json({
+      success: true,
+      data: listing,
+      message: "Listing deleted",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
