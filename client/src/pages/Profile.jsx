@@ -193,6 +193,10 @@ export default function Profile() {
     }
   };
 
+  const handleListingChange = async (id) => {
+    console.log("updating listing: ", id);
+  };
+
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
@@ -345,7 +349,10 @@ export default function Profile() {
                 >
                   Delete
                 </button>
-                <button className="text-green-500 uppercase hover:text-green-700">
+                <button
+                  onClick={() => handleListingChange(listing._id)}
+                  className="text-green-500 uppercase hover:text-green-700"
+                >
                   Edit
                 </button>
               </div>
