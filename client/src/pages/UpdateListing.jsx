@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   getStorage,
   uploadBytesResumable,
@@ -7,11 +7,12 @@ import {
 } from "firebase/storage";
 import { app } from "../firebase";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function CreateListing() {
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
+  const { listingId } = useParams();
   const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
     imageUrls: [],
@@ -33,7 +34,29 @@ export default function CreateListing() {
   const [formError, setFormError] = useState(false);
   const [formUploading, setFormUploading] = useState(false);
 
-  console.log(formData);
+  useEffect(() => {
+    const fetchListing = async () => {
+      try {
+        const res = await fetch(`/api/listing/get-listing/${listingId}`);
+        const resp = await res.json();
+        const data = resp.data;
+        if (resp.success === false) {
+          setFormError(data.message);
+          setTimeout(() => {
+            setFormError(false);
+          }, 3000);
+        } else {
+          setFormData(data);
+        }
+      } catch (error) {
+        setFormError(error.message);
+        setTimeout(() => {
+          setFormError(false);
+        }, 3000);
+      }
+    };
+    fetchListing();
+  }, []);
 
   const handleImageSubmit = (e) => {
     if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
@@ -154,8 +177,8 @@ export default function CreateListing() {
       setFormUploading(true);
       setFormError(false);
 
-      const res = await fetch("/api/listing/create", {
-        method: "POST",
+      const res = await fetch(`/api/listing/update/${listingId}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -164,7 +187,8 @@ export default function CreateListing() {
           userRef: currentUser.user._id,
         }),
       });
-      const data = await res.json();
+      const resp = await res.json();
+      const data = resp.data;
       setFormUploading(false);
 
       if (data.success === false) {
@@ -204,7 +228,7 @@ export default function CreateListing() {
   return (
     <main className="w-full md:w-3/4 mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">
-        Create Listing
+        Update Listing
       </h1>
       <form onSubmit={handleSubmit}>
         <div className="w-full flex flex-col gap-4">
@@ -434,7 +458,7 @@ export default function CreateListing() {
               type="submit"
               className="w-full bg-blue-500 text-white py-2 px-3 rounded-md mx-auto uppercase hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mb-4"
             >
-              {formUploading ? "Uploading..." : "Create Listing"}
+              {formUploading ? "Uploading..." : "Update Listing"}
             </button>
             {formError ? (
               <span className="text-red-500">{formError}</span>

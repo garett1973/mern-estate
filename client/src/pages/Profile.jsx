@@ -168,7 +168,6 @@ export default function Profile() {
         return;
       }
       setUserListings(data.listings);
-      console.log(userListings);
     } catch (error) {
       setGetListingsError(true);
       setTimeout(() => {
@@ -191,10 +190,6 @@ export default function Profile() {
     } catch (error) {
       console.log(error.message);
     }
-  };
-
-  const handleListingChange = async (id) => {
-    console.log("updating listing: ", id);
   };
 
   return (
@@ -349,12 +344,12 @@ export default function Profile() {
                 >
                   Delete
                 </button>
-                <button
-                  onClick={() => handleListingChange(listing._id)}
+                <Link
+                  to={`/update-listing/${listing._id}`}
                   className="text-green-500 uppercase hover:text-green-700"
                 >
-                  Edit
-                </button>
+                  <button>Edit</button>
+                </Link>
               </div>
             </div>
           ))}
