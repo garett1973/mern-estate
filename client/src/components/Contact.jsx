@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-export default function Contact({ listing }) {
+export default function Contact(listing) {
   const [landlord, setLandlord] = useState(null); // [1]
   const [landlordError, setLandlordError] = useState(false);
   const [message, setMessage] = useState("");

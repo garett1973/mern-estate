@@ -51,7 +51,9 @@ export default function Listing() {
       }
     };
     fetchListing();
+    console.log(currentUser, listing.userRef);
   }, []);
+
   return (
     <main>
       {loading && (
@@ -144,8 +146,8 @@ export default function Listing() {
                 {listing.furnished ? "Furnished" : "Unfurnished"}
               </li>
             </ul>
-            {/* {currentUser && listing.userRef != currentUser._id && !contact && ( */}
-            {currentUser && !contact && (
+            {currentUser && listing.userRef != currentUser._id && !contact && (
+              // {currentUser && !contact && (
               <button
                 onClick={() => setContact(true)}
                 className="bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3"
