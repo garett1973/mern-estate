@@ -20,7 +20,6 @@ import {
 } from "../redux/user/userSlice.js";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import { set } from "mongoose";
 
 export default function Profile() {
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -35,7 +34,11 @@ export default function Profile() {
   const [userListings, setUserListings] = useState([]); // [{}, {}, {}
   const dispatch = useDispatch();
 
-  const loggedInUser = currentUser.user;
+  // const state = useSelector((state) => state);
+  // console.log("State:", state);
+
+  const loggedInUser = currentUser;
+  // console.log("Logged in user:", loggedInUser);
 
   useEffect(() => {
     if (file) {
@@ -92,7 +95,6 @@ export default function Profile() {
         }
       );
       const data = await res.json();
-      console.log(data);
       if (data.success === false) {
         dispatch(updateUserFailure(data.message));
         setTimeout(() => {
@@ -161,14 +163,15 @@ export default function Profile() {
       setGetListingsError(false);
       const res = await fetch(`/api/user/listings/${loggedInUser._id}`);
       const data = await res.json();
-      if (data.success === false) {
+
+      if (!data || data.length === 0) {
         setGetListingsError(true);
         setTimeout(() => {
           setGetListingsError(false);
         }, 5000);
         return;
       }
-      setUserListings(data.listings);
+      setUserListings(data);
     } catch (error) {
       setGetListingsError(true);
       setTimeout(() => {
@@ -184,7 +187,6 @@ export default function Profile() {
       });
       const data = await res.json();
       if (data.success === false) {
-        console.log(data.message);
         return;
       }
       setUserListings(userListings.filter((listing) => listing._id !== id));
@@ -313,7 +315,9 @@ export default function Profile() {
       </div>
       <p className="w-full  mx-auto mt-2">
         {getListingsError ? (
-          <span className="text-red-700">Error getting listings</span>
+          <span className="text-red-700">
+            Error getting listings or user has not created any listings yet.
+          </span>
         ) : (
           ""
         )}

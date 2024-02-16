@@ -31,10 +31,8 @@ export const signup = async (req, res, next) => {
 
 export const signin = async (req, res, next) => {
   const { email, password } = req.body;
-  console.log("signin", req.body);
   try {
     const validUser = await User.findOne({ email });
-    console.log("validUser");
     if (!validUser) {
       return next(errorHandler(false, 400, "Invalid credentials"));
     }
@@ -56,11 +54,7 @@ export const signin = async (req, res, next) => {
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
       })
       .status(200)
-      .json({
-        success: true,
-        message: "User logged in successfully",
-        user: rest,
-      });
+      .json(rest);
   } catch (err) {
     next(err);
   }
@@ -82,11 +76,7 @@ export const google = async (req, res, next) => {
           expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
         })
         .status(200)
-        .json({
-          success: true,
-          message: "User logged in successfully",
-          user: rest,
-        });
+        .json(rest);
     } else {
       const geratedPassword = Math.random().toString(36).slice(-8) + "Aa1";
       const hashedPassword = bcryptjs.hashSync(geratedPassword, 10);
@@ -111,11 +101,7 @@ export const google = async (req, res, next) => {
           expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
         })
         .status(201)
-        .json({
-          success: true,
-          message: "User created successfully",
-          user: rest,
-        });
+        .json(rest);
     }
   } catch (err) {
     next(err);

@@ -40,11 +40,7 @@ export const updateUser = async (req, res, next) => {
     }
 
     const { password, ...rest } = updatedUser._doc;
-    res.status(200).json({
-      success: true,
-      message: "User updated successfully",
-      user: rest,
-    });
+    res.status(200).json(rest);
   } catch (err) {
     return next(errorHandler(false, 500, "Internal Server Error"));
   }
@@ -84,18 +80,13 @@ export const getUserListings = async (req, res, next) => {
       return next(errorHandler(false, 404, "Listings not found"));
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Listings retrieved successfully",
-      listings,
-    });
+    res.status(200).json(listings);
   } catch (err) {
     return next(errorHandler(false, 500, "Internal Server Error"));
   }
 };
 
 export const getUser = async (req, res, next) => {
-  console.log(req.user, req.params);
   if (req.user.id !== req.params.id) {
     return next(errorHandler(false, 401, "You are unauthorized"));
   }
@@ -108,11 +99,7 @@ export const getUser = async (req, res, next) => {
     }
 
     const { password: pass, ...rest } = user._doc;
-    res.status(200).json({
-      success: true,
-      message: "User retrieved successfully",
-      user: rest,
-    });
+    res.status(200).json(rest);
   } catch (err) {
     return next(errorHandler(false, 500, "Internal Server Error"));
   }

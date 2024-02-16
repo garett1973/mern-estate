@@ -23,7 +23,7 @@ export default function Listing() {
   const [listing, setListing] = useState(null);
   const [copied, setCopied] = useState(false);
   const [contact, setContact] = useState(false); // [2
-  const currentUser = useSelector((state) => state.user.currentUser.user);
+  const currentUser = useSelector((state) => state.user.currentUser);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -51,7 +51,6 @@ export default function Listing() {
       }
     };
     fetchListing();
-    console.log(currentUser, listing.userRef);
   }, []);
 
   return (
